@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@opencode/smart-title",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "OpenCode plugin that automatically generates meaningful session titles using AI and smart context selection",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "postbuild": "rm -rf dist/logs",
+    "prepublishOnly": "npm run build",
+    "dev": "opencode plugin dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "plugin",
+    "session-title",
+    "auto-title",
+    "ai",
+    "title-generation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opencode-ai/smart-title.git"
+  },
+  "bugs": {
+    "url": "https://github.com/opencode-ai/smart-title/issues"
+  },
+  "homepage": "https://github.com/opencode-ai/smart-title#readme",
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=0.13.7"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.27",
+    "@tarquinen/opencode-auth-provider": "^0.1.3",
+    "ai": "^5.0.98",
+    "jsonc-parser": "^3.3.1"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": ">=0.13.7",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
+}
