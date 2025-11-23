@@ -6,10 +6,12 @@
  * 
  * Configuration: ~/.config/opencode/smart-title.jsonc
  * Logs: ~/.config/opencode/logs/smart-title/YYYY-MM-DD.log
+ * 
+ * NOTE: ai package is lazily imported to avoid loading the 2.8MB package during
+ * plugin initialization. The package is only loaded when title generation is needed.
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
-import { generateText } from "ai"
 import { getConfig } from "./lib/config.js"
 import { Logger } from "./lib/logger.js"
 import { selectModel } from "./lib/model-selector.js"
@@ -309,6 +311,9 @@ async function generateTitleFromContext(
         logger.debug('title-generation', 'Generating title', {
             contextLength: context.length
         })
+
+        // Lazy import - only load the 2.8MB ai package when actually needed
+        const { generateText } = await import('ai')
 
         const result = await generateText({
             model,
