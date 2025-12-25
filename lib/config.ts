@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'fs
 import { join, dirname } from 'path'
 import { homedir } from 'os'
 import { parse } from 'jsonc-parser'
-import { Logger } from './logger'
 import type { PluginInput } from '@opencode-ai/plugin'
 
 export interface PluginConfig {
@@ -109,9 +108,7 @@ function loadConfigFile(configPath: string): Partial<PluginConfig> | null {
     try {
         const fileContent = readFileSync(configPath, 'utf-8')
         return parse(fileContent) as Partial<PluginConfig>
-    } catch (error: any) {
-        const logger = new Logger(true)
-        logger.error('config', `Failed to read config from ${configPath}: ${error.message}`)
+    } catch {
         return null
     }
 }
@@ -132,9 +129,7 @@ function loadConfigFile(configPath: string): Partial<PluginConfig> | null {
 export function getConfig(ctx?: PluginInput): PluginConfig {
     let config = { ...defaultConfig }
     const configPaths = getConfigPaths(ctx)
-    const logger = new Logger(true) // Always log config loading
 
-    // 1. Load global config
     if (configPaths.global) {
         const globalConfig = loadConfigFile(configPaths.global)
         if (globalConfig) {
@@ -144,15 +139,11 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 model: globalConfig.model ?? config.model,
                 updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold
             }
-            logger.info('config', 'Loaded global config', { path: configPaths.global })
         }
     } else {
-        // Create default global config if it doesn't exist
         createDefaultConfig()
-        logger.info('config', 'Created default global config', { path: GLOBAL_CONFIG_PATH_JSONC })
     }
 
-    // 2. Load project config (overrides global)
     if (configPaths.project) {
         const projectConfig = loadConfigFile(configPaths.project)
         if (projectConfig) {
@@ -162,10 +153,7 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 model: projectConfig.model ?? config.model,
                 updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold
             }
-            logger.info('config', 'Loaded project config (overrides global)', { path: configPaths.project })
         }
-    } else if (ctx?.directory) {
-        logger.debug('config', 'No project config found', { searchedFrom: ctx.directory })
     }
 
     return config
