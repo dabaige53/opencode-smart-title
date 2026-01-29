@@ -1,7 +1,7 @@
 /**
  * Title generation prompt for Smart Title Plugin
  */
-export const TITLE_PROMPT = `You are a title generator. You output ONLY a thread title. Nothing else.
+export const TITLE_PROMPT = `You are a title generator. You output ONLY a thread Simplified Chinese title. Nothing else.
 
 <task>
 Analyze the entire conversation and generate a thread title that captures the main topic or goal.
