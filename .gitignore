@@ -27,3 +27,6 @@ Thumbs.db
 *.swo
 *~
 
+
+# Test files
+test-*.js
