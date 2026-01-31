@@ -216,24 +216,32 @@ function truncate(text: string, maxLength: number): string {
 
 /**
  * Format conversation context for title generation
+ * Applies maxTurns and maxCharsPerMessage limits to reduce token usage
  */
-function formatContextForTitle(turns: ConversationTurn[]): string {
+function formatContextForTitle(turns: ConversationTurn[], maxTurns: number, maxCharsPerMessage: number): string {
     const formatted: string[] = []
+    
+    // Only use the most recent N turns
+    const recentTurns = turns.slice(-maxTurns)
 
-    for (const turn of turns) {
-        // Add user message
-        formatted.push(`User: ${turn.user.text}`)
+    for (const turn of recentTurns) {
+        // Add user message (truncated)
+        const userText = truncate(turn.user.text, maxCharsPerMessage)
+        formatted.push(`User: ${userText}`)
         formatted.push("") // Empty line for readability
 
         // Add assistant messages if they exist
         if (turn.assistant) {
             if (turn.assistant.first === turn.assistant.last) {
-                // Only one message - don't duplicate
-                formatted.push(`Assistant: ${turn.assistant.first}`)
+                // Only one message - don't duplicate (truncated)
+                const assistantText = truncate(turn.assistant.first, maxCharsPerMessage)
+                formatted.push(`Assistant: ${assistantText}`)
             } else {
-                // Multiple messages - show first and last
-                formatted.push(`Assistant (initial): ${turn.assistant.first}`)
-                formatted.push(`Assistant (final): ${turn.assistant.last}`)
+                // Multiple messages - show first and last (both truncated)
+                const firstText = truncate(turn.assistant.first, maxCharsPerMessage)
+                const lastText = truncate(turn.assistant.last, maxCharsPerMessage)
+                formatted.push(`Assistant (initial): ${firstText}`)
+                formatted.push(`Assistant (final): ${lastText}`)
             }
             formatted.push("") // Empty line between turns
         }
@@ -378,8 +386,15 @@ async function updateSessionTitle(
             })
         }
 
-        // Format context
-        const context = formatContextForTitle(turns)
+        // Format context with limits
+        const context = formatContextForTitle(turns, config.maxTurns, config.maxCharsPerMessage)
+
+        logger.info('update-title', 'Context formatted', {
+            sessionId,
+            originalTurns: turns.length,
+            usedTurns: Math.min(turns.length, config.maxTurns),
+            contextLength: context.length
+        })
 
         // Generate title
         const newTitle = await generateTitleFromContext(

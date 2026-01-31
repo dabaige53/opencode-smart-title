@@ -24,18 +24,20 @@ export const FALLBACK_MODELS: Record<string, string> = {
     xai: 'grok-4-fast',
     alibaba: 'qwen3-coder-flash',
     zai: 'glm-4.5-flash',
-    opencode: 'big-pickle'
+    opencode: 'gpt-5-nano',
+    nvidia: 'nvidia/nvidia-nemotron-nano-9b-v2'
 };
 
 const PROVIDER_PRIORITY = [
+    'opencode',
     'openai',
     'anthropic',
     'google',
+    'nvidia',
     'deepseek',
     'xai',
     'alibaba',
-    'zai',
-    'opencode'
+    'zai'
 ];
 
 export interface ModelSelectionResult {
@@ -71,15 +73,19 @@ export async function selectModel(
 
     if (configModel) {
         const parts = configModel.split('/')
-        if (parts.length !== 2) {
-            logger?.warn('model-selector', '✗ Invalid config model format, expected "provider/model"', {
+        if (parts.length < 2 || parts.length > 3) {
+            logger?.warn('model-selector', '✗ Invalid config model format, expected "provider/model" or "provider/namespace/model"', {
                 configModel
             });
         } else {
-            const [providerID, modelID] = parts
+            // Support both 2-part (provider/model) and 3-part (provider/namespace/model) formats
+            const providerID = parts[0]
+            const modelID = parts.slice(1).join('/') // Join remaining parts for namespace/model
+            
             logger?.debug('model-selector', 'Attempting to use config-specified model', {
                 providerID,
-                modelID
+                modelID,
+                format: parts.length === 2 ? '2-part' : '3-part'
             });
 
             try {

@@ -10,12 +10,16 @@ export interface PluginConfig {
     debug: boolean
     model?: string
     updateThreshold: number
+    maxTurns: number
+    maxCharsPerMessage: number
 }
 
 const defaultConfig: PluginConfig = {
     enabled: true,
     debug: false,
-    updateThreshold: 1
+    updateThreshold: 1,
+    maxTurns: 5,
+    maxCharsPerMessage: 500
 }
 
 const GLOBAL_CONFIG_DIR = join(homedir(), '.config', 'opencode')
@@ -94,7 +98,15 @@ function createDefaultConfig(): void {
   // "model": "anthropic/claude-haiku-4-5",
 
   // Update title every N idle events (default: 1)
-  "updateThreshold": 1
+  "updateThreshold": 1,
+
+  // Maximum number of conversation turns to include in context (default: 5)
+  // Reduces token usage and API costs by limiting history
+  "maxTurns": 5,
+
+  // Maximum characters per message (default: 500)
+  // Long messages will be truncated to this length
+  "maxCharsPerMessage": 500
 }
 `
 
@@ -137,7 +149,9 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 enabled: globalConfig.enabled ?? config.enabled,
                 debug: globalConfig.debug ?? config.debug,
                 model: globalConfig.model ?? config.model,
-                updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold
+                updateThreshold: globalConfig.updateThreshold ?? config.updateThreshold,
+                maxTurns: globalConfig.maxTurns ?? config.maxTurns,
+                maxCharsPerMessage: globalConfig.maxCharsPerMessage ?? config.maxCharsPerMessage
             }
         }
     } else {
@@ -151,7 +165,9 @@ export function getConfig(ctx?: PluginInput): PluginConfig {
                 enabled: projectConfig.enabled ?? config.enabled,
                 debug: projectConfig.debug ?? config.debug,
                 model: projectConfig.model ?? config.model,
-                updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold
+                updateThreshold: projectConfig.updateThreshold ?? config.updateThreshold,
+                maxTurns: projectConfig.maxTurns ?? config.maxTurns,
+                maxCharsPerMessage: projectConfig.maxCharsPerMessage ?? config.maxCharsPerMessage
             }
         }
     }
